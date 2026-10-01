@@ -5,6 +5,7 @@ install -Dm755 "$SRC/system/init" "$DESTDIR/usr/sbin/rungic-plasma-init"
 # helpers fails (2026-10-01). system/init preloads this: its constructor answers
 # pidfd_open with ENOSYS, as an upstream kernel without pidfd does, and the seccomp filter is
 # inherited by every child.
+mkdir -p "$DESTDIR/usr/local/lib"
 cc -O2 -shared -fPIC -o "$DESTDIR/usr/local/lib/rungic-pidfd.so" "$SRC/system/pidfd-shim.c"
 strip --strip-unneeded "$DESTDIR/usr/local/lib/rungic-pidfd.so"
 install -Dm755 "$SRC/desktop/session" "$DESTDIR/usr/libexec/rungic-plasma-session"
