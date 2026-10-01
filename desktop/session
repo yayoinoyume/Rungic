@@ -48,6 +48,13 @@ printf '%s\n' 'export WAYLAND_DISPLAY=wayland-0' >> "$XDG_RUNTIME_DIR/rungic-ses
 kbuildsycoca6 --noincremental
 # The GPU settings into the user manager before any unit of the session starts: startplasma
 # imports its environment too, but a unit (re)started earlier would run without them.
+# The system service starts alongside user@1000.service. Wait for the user manager bus before
+# any --user command or systemd-run --user; otherwise the session exits before the desktop starts.
+for _ in $(seq 100); do
+    [ -S "$XDG_RUNTIME_DIR/bus" ] && break
+    sleep 0.1
+done
+[ -S "$XDG_RUNTIME_DIR/bus" ] || exit 2
 systemctl --user import-environment MESA_LOADER_DRIVER_OVERRIDE FD_KGSL_ENABLE_DMABUF VK_DRIVER_FILES \
     QSG_RHI_BACKEND GSK_RENDERER QT_QUICK_BACKEND KWIN_COMPOSE FLATPAK_GL_DRIVERS 2>/dev/null || true
 # A restart of this unit stops its main process, but the previous session's startplasma-wayland
@@ -60,4 +67,18 @@ for _ in $(seq 100); do
     sleep 0.1
 done
 pkill -KILL -u "$(id -u)" -f '^(/usr/bin/)?startplasma-wayland' 2>/dev/null || true
-exec /usr/bin/startplasmamobile
+# Desktop shell: keep the mobile environment setup, but do not let startplasmamobile
+# force PLASMA_DEFAULT_SHELL=org.kde.plasma.mobileshell.
+export PLASMA_DEFAULT_SHELL=org.kde.plasma.desktop
+export PLASMA_PLATFORM=phone:handset
+export PLASMA_INTEGRATION_USE_PORTAL=1
+export QT_QUICK_CONTROLS_STYLE=org.kde.breeze
+export QT_ENABLE_GLYPH_CACHE_WORKAROUND=1
+export XDG_CONFIG_DIRS="$HOME/.config/plasma-mobile:/etc/xdg${XDG_CONFIG_DIRS:+:$XDG_CONFIG_DIRS}"
+QT_QPA_PLATFORM=offscreen plasma-mobile-envmanager --apply-settings
+# The desktop shell uses the standard KWin configuration; make the window controls explicit
+# before KWin starts. These are user-level overrides of the Plasma Mobile defaults.
+kwriteconfig6 --file kwinrc --group Windows --key BorderlessMaximizedWindows false || true
+kwriteconfig6 --file kwinrc --group org.kde.kdecoration2 --key ButtonsOnRight MIAX || true
+kwriteconfig6 --file kwinrc --group Plugins --key convergentwindowsEnabled false || true
+exec systemd-run --user --wait --collect --unit=rungic-startplasma /usr/bin/startplasma-wayland
