@@ -421,9 +421,30 @@ du -sk --exclude=DEBIAN "$DESTDIR" | cut -f1 > size.txt
 '''
     run(f'mkdir -p {base} && cat > {base}/build-run.sh <<\'RUNGIC_EOF\'\n{script}RUNGIC_EOF', 'container')
     if host.name == 'phone':
-        command = (f'systemctl reset-failed {unit} 2>/dev/null || true\n'
-                   f'systemd-run --unit={unit} --wait --pipe --collect --quiet -p TimeoutStartSec=14400 --nice=10 '
-                   f'-p IOSchedulingClass=idle --setenv=HOME=/root sh -eu {base}/build-run.sh')
+        # systemd in this container cannot spawn anything: cgroup v2's no-internal-process rule
+        # leaves PID 1 in /init.scope, so no controller can be enabled and every unit, a bare
+        # `systemd-run --wait /bin/true` included, ends at Result=resources (2026-10-01). Detach
+        # the build and read its rc from a file: the same contract as the transient unit.
+        probe = run('systemd-run --unit=rungic-probe --wait /bin/true 2>&1 || true',
+                    'container', timeout=90, check=False).stdout
+        if 'Failed' in probe or 'failed' in probe or not probe.strip():
+            command = (f'export HOME=/root\n'
+                       # PyPI proper is unusably slow from mainland China and rungic-cua pulls
+                       # onnxruntime-sized wheels; pip honours these from the environment.
+                       f'export PIP_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple\n'
+                       f'export PIP_DEFAULT_TIMEOUT=120\n'
+                       # The kernel's pidfd is incomplete (waitid(P_PIDFD) = EINVAL), which breaks
+                       # GLib's child watch and so any build step that spawns helpers.
+                       f'[ -f /usr/local/lib/rungic-pidfd.so ] && export LD_PRELOAD=/usr/local/lib/rungic-pidfd.so\n'
+                       f'rm -f {base}/build.rc\n'
+                       f'setsid nohup nice -n 10 sh -c \'sh -eu {base}/build-run.sh; echo $? > {base}/build.rc\' '
+                       f'> {base}/build.log 2>&1 </dev/null &\n'
+                       f'i=0; while [ ! -f {base}/build.rc ] && [ $i -lt 14000 ]; do sleep 1; i=$((i + 1)); done\n'
+                       f'rc=$(cat {base}/build.rc 2>/dev/null || echo 1); [ "$rc" = 0 ]')
+        else:
+            command = (f'systemctl reset-failed {unit} 2>/dev/null || true\n'
+                       f'systemd-run --unit={unit} --wait --pipe --collect --quiet -p TimeoutStartSec=14400 --nice=10 '
+                       f'-p IOSchedulingClass=idle --setenv=HOME=/root sh -eu {base}/build-run.sh')
     else:
         command = f'HOME=/root nice -n 10 sh -eu {base}/build-run.sh'
     result = run(f'{command} > {base}/build.log 2>&1; echo "exit=$?"; tail -30 {base}/build.log',
