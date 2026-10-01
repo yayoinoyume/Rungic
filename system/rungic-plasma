@@ -193,7 +193,7 @@ start_container() {
     # The container starts inside the memory cgroup: lxc-start and everything below inherit it.
     if apply_memory_limit; then echo $$ > "$MEMCG/cgroup.procs" 2>/dev/null || true; fi
     gpu_rule=$(device_rule /dev/kgsl-3d0 rw)
-    heap_rule=$(device_rule /dev/dma_heap/system r)
+    heap_rule=$(if [ -c /dev/dma_heap/system ]; then device_rule /dev/dma_heap/system r; else device_rule /dev/ion rw; fi)
     # Qualcomm's V4L2 video decoder and encoder (msm_vidc): librungiccodec codes on them directly
     # (docs/108). Optional: a phone without them starts the same, its coding through the APK.
     video_rule= encoder_rule=
