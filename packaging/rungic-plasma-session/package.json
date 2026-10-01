@@ -5,6 +5,7 @@
   "build": "device",
   "paths": [
     "system/init",
+    "system/pidfd-shim.c",
     "desktop/session",
     "system/user-dirs",
     "system/shared-storage",
