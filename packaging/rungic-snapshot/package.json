@@ -4,22 +4,25 @@
   "architecture": "arm64",
   "build": "device",
   "paths": [],
-  "upstream": ["snapshot"],
+  "upstream": [
+    "snapshot"
+  ],
   "depends": "rungic-codec, gstreamer1.0-pipewire, gstreamer1.0-plugins-good, gstreamer1.0-plugins-bad",
   "conflicts": "snapshot",
   "provides": "snapshot",
   "build_depends": [
-    "meson",
+    "appstream",
     "cargo",
-    "rustc",
-    "libgtk-4-dev",
-    "libadwaita-1-dev",
-    "libgstreamer1.0-dev",
-    "libgstreamer-plugins-base1.0-dev",
-    "libgstreamer-plugins-bad1.0-dev",
-    "glycin-loaders",
     "desktop-file-utils",
-    "appstream"
+    "glycin-loaders",
+    "libadwaita-1-dev",
+    "libglycin-gtk4-2-dev",
+    "libgstreamer-plugins-bad1.0-dev",
+    "libgstreamer-plugins-base1.0-dev",
+    "libgstreamer1.0-dev",
+    "libgtk-4-dev",
+    "meson",
+    "rustc"
   ],
   "description": "GNOME Snapshot camera with Android hardware encoding\nSnapshot 51.0 (Ubuntu has no snapshot package) with the Android MediaCodec encoder\nincluded in its hardware-encoding switch (docs/48).",
   "obsolete": [
