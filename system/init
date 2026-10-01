@@ -24,5 +24,11 @@ mkdir -p -m 0700 /run/rungic-proc && mount -t proc -o nosuid,nodev,noexec proc /
 chmod 0666 /dev/fuse
 # The desktop account across the Rungic rename (docs/70), before any of its processes run.
 /usr/libexec/rungic-rebrand-system up || echo "rungic-plasma-init: the account keeps its old home"
+# This kernel's pidfd backport is incomplete: pidfd_open succeeds but waitid(P_PIDFD) fails
+# with EINVAL, so systemd 259 can neither reap nor confirm anything it spawns and every
+# unit ends at Result=resources (2026-10-01). The shim makes pidfd_open report ENOSYS,
+# exactly what an upstream kernel without pidfd does, so systemd takes the waitpid path
+# this kernel does implement. Its seccomp filter is inherited by every child.
+[ -f /usr/local/lib/rungic-pidfd.so ] && export LD_PRELOAD=/usr/local/lib/rungic-pidfd.so
 export container=lxc
 exec /sbin/init

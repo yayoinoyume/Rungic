@@ -1,5 +1,12 @@
 # rungic-plasma-session
 install -Dm755 "$SRC/system/init" "$DESTDIR/usr/sbin/rungic-plasma-init"
+# This kernel backports pidfd_open but not waitid(P_PIDFD) (upstream 5.4) and its pidfd has
+# no pid behind it, so GLib's child watch drops every child and any build step that spawns
+# helpers fails (2026-10-01). system/init preloads this: its constructor answers
+# pidfd_open with ENOSYS, as an upstream kernel without pidfd does, and the seccomp filter is
+# inherited by every child.
+cc -O2 -shared -fPIC -o "$DESTDIR/usr/local/lib/rungic-pidfd.so" "$SRC/system/pidfd-shim.c"
+strip --strip-unneeded "$DESTDIR/usr/local/lib/rungic-pidfd.so"
 install -Dm755 "$SRC/desktop/session" "$DESTDIR/usr/libexec/rungic-plasma-session"
 install -Dm755 "$SRC/desktop/login-environment.py" "$DESTDIR/usr/libexec/rungic-login-environment"
 install -Dm755 "$SRC/system/user-dirs" "$DESTDIR/usr/libexec/rungic-user-dirs"
