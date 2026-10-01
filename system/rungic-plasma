@@ -134,7 +134,7 @@ start_container() {
     # The container starts inside the memory cgroup: lxc-start and everything below inherit it.
     if apply_memory_limit; then echo $$ > "$MEMCG/cgroup.procs" 2>/dev/null || true; fi
     gpu_rule=$(device_rule /dev/kgsl-3d0 rw)
-    heap_rule=$(device_rule /dev/dma_heap/system r)
+    heap_rule=$(if [ -c /dev/dma_heap/system ]; then device_rule /dev/dma_heap/system r; else device_rule /dev/ion rw; fi)
     label=$(ls -dZ /data/user/0/com.rungic.plasma/files | cut -d ' ' -f 1)
     case "$label" in u:object_r:app_data_file:s0:c*) ;;
       *) echo 'Cannot identify desktop APK SELinux label' >&2; exit 1;;
