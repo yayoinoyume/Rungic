@@ -7,7 +7,7 @@
 - 源码：`shared/platform/clipboard.py` 只同步当前纯文本，不存历史；APK `PlatformBridge` 通过 `getPrimaryClip().getItemAt(0).getText()` 读取当前条目，要求 Activity 有焦点，跳过敏感标记及超长文本。
 - X70 镜像基线：Plasma Mobile 6.6.5、plasma-workspace/libklipper6 6.6.6；包含 `org.kde.plasma.clipboard.so` 与 QML `KlipperPopup`、`ClipboardMenu`、`HistoryModel`。外屏默认布局包含 systemtray。镜像包含组件不等于当前用户已加载它。
 - 当前 ADB 5037/5038 均没有 X70；未对其他手机执行写操作。在线 G100 S（mumba，5037 的明确 Wi-Fi serial）只读确认 `rungic-plasma-clipboard.service`、plasmashell active，`org.kde.klipper /klipper` 存在，历史接口返回 1 条。只输出数量，未输出或存储正文。此证据不能推广为 X70 运行验收。
-- 用户指出应核验当前 USB G100 后，确认 ADB 5038 / `<DEVICE-SERIAL>` 为 portov / XT2533-4，固件 `W1VT36H.1-51-8`，当前 APK 2.8/56。普通 ADB 正常，但 `su -c id` 与 root stdin 脚本均返回 `Permission denied`（退出 13），因此暂不能查询该机容器用户 D-Bus；不能把 G100 S 的运行结果当作此 G100 已验。连接正常与 Magisk Shell 授权是不同检查项，授权恢复后继续查服务及入口。
+- 用户指出应核验当前 USB G100 后，确认 ADB 5038 / `G100-DEVICE-SERIAL` 为 portov / XT2533-4，固件 `W1VT36H.1-51-8`，当前 APK 2.8/56。普通 ADB 正常，但 `su -c id` 与 root stdin 脚本均返回 `Permission denied`（退出 13），因此暂不能查询该机容器用户 D-Bus；不能把 G100 S 的运行结果当作此 G100 已验。连接正常与 Magisk Shell 授权是不同检查项，授权恢复后继续查服务及入口。
 - 上游 Mobile 6.6.5 源码树中没有独立 clipboard/klipper 快捷设置；当前项目也未提供这种手机触屏入口。外屏托盘、手机桌面小部件的实际可见性仍需按用户布局实测。
 
 ## 已有入口与推荐改动
@@ -38,7 +38,7 @@ Klipper 可以记录它实际收到的 Linux 复制内容，以及 Android 桥�
 
 ### G100 授权恢复后的实际核验
 
-用户开启 Magisk Shell 后，5038 / <DEVICE-SERIAL> 上 root 恢复。同步服务与 plasmashell 均 active，但 `org.kde.klipper` 不存在，说明不能只检查桥接服务就认定历史正在记录。已安装 workspace/libklipper6 6.6.6、Mobile 6.6.5+rungic2、clipboard applet 和 `plasmawindowed`，没有独立 `klipper` 可执行文件。
+用户开启 Magisk Shell 后，5038 / G100-DEVICE-SERIAL 上 root 恢复。同步服务与 plasmashell 均 active，但 `org.kde.klipper` 不存在，说明不能只检查桥接服务就认定历史正在记录。已安装 workspace/libklipper6 6.6.6、Mobile 6.6.5+rungic2、clipboard applet 和 `plasmawindowed`，没有独立 `klipper` 可执行文件。
 
 用临时用户单元 `rungic-clipboard-preview.service` 运行 `plasmawindowed org.kde.plasma.clipboard`，并将现有 Rungic Activity 切到前台后，Klipper D-Bus 出现，窗口管理器确认 Clipboard 窗口在 WL-0 激活；截图实际显示搜索栏与 “Clipboard is empty”，历史数量为 0。没有写入测试文本或清空历史。窗口暂留供用户查看，未配置开机自启；这只是现成组件显示验证，关闭此唯一承载进程后不能假定历史后台仍运行。证据 `g100-preview.txt`、`g100-clipboard.png` 在上述研究目录。
 
@@ -65,7 +65,7 @@ Klipper 可以记录它实际收到的 Linux 复制内容，以及 Android 桥�
 
 ### 部署范围
 
-G100 / portov / ADB 5038 / <DEVICE-SERIAL>，APK 仍是 2.8/56。Mac mini 沿现有系统代理构建，使用 `tools/build_on_device.py` 增量构建并 collect 包；编译/打包成功。构建日志末尾 `dpkg-genchanges` 因缺 `.dsc` 失败，因此不称为完整 source changes 产物成功；实际 `.deb` 已生成、收集、安装，`apt-get check` 和 `dpkg --audit` 通过。
+G100 / portov / ADB 5038 / G100-DEVICE-SERIAL，APK 仍是 2.8/56。Mac mini 沿现有系统代理构建，使用 `tools/build_on_device.py` 增量构建并 collect 包；编译/打包成功。构建日志末尾 `dpkg-genchanges` 因缺 `.dsc` 失败，因此不称为完整 source changes 产物成功；实际 `.deb` 已生成、收集、安装，`apt-get check` 和 `dpkg --audit` 通过。
 
 只更新 plasma-mobile 与 tweaks 至 rungic6。为保持原 release 的精确依赖一致，调用已有 `rungic_release.build_meta` 基于设备原始 `20260928.1` 清单生成 `20260928.1+clipboard1`；其他包版本保持一致。清单明确是此机增量实验，带补丁哈希及 dirty 标记，不是全镜像新发行/清数据验收。更新前设备与原清单无版本漂移，原 deb 在 `.work/apt/repo/` 保留，可连同旧 metapackage 回退。仅重启 plasmashell，未重启手机/容器，未刷写。
 

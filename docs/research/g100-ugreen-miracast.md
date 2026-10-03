@@ -1,6 +1,6 @@
 # G100 向 UGREEN 投屏被 Moto 外屏界面覆盖
 
-2026-09-29。用户报告投屏显示 Moto Ready For，未显示 Linux。执行端现场为 mibook / x86_64，系统代理 none；USB G100 `<DEVICE-SERIAL>` 在 ADB 5038，设备 `portov` / XT2533-4 / Android 16 SDK 36 / `W1VT36H.1-51-8`，SELinux Enforcing。另一台无线 G100 S 未操作。
+2026-09-29。用户报告投屏显示 Moto Ready For，未显示 Linux。执行端现场为 mibook / x86_64，系统代理 none；USB G100 `G100-DEVICE-SERIAL` 在 ADB 5038，设备 `portov` / XT2533-4 / Android 16 SDK 36 / `W1VT36H.1-51-8`，SELinux Enforcing。另一台无线 G100 S 未操作。
 
 ## 当前结论
 

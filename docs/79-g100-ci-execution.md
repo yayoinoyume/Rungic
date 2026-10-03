@@ -1,6 +1,6 @@
 # G100 三段镜像 CI 首轮执行记录
 
-2026-09-27，目标仅为 XT2533-4 / `portov_cn` / RETCN / `W1VT36H.1-51-8`，USB 序列号 `<DEVICE-SERIAL>`。本篇记录本轮实际产物与验收；通用设计和放行条件见 [75 篇](75-image-build-separation.md)、[77 篇](77-g100-three-ci-assessment.md)，原厂输入核验见 [78 篇](78-g100-firmware-inventory.md)。运行材料位于 `.work/ci/runs/portov-20260927-86c6642d/`，不进入 Git。
+2026-09-27，目标仅为 XT2533-4 / `portov_cn` / RETCN / `W1VT36H.1-51-8`，USB 序列号 `G100-DEVICE-SERIAL`。本篇记录本轮实际产物与验收；通用设计和放行条件见 [75 篇](75-image-build-separation.md)、[77 篇](77-g100-three-ci-assessment.md)，原厂输入核验见 [78 篇](78-g100-firmware-inventory.md)。运行材料位于 `.work/ci/runs/portov-20260927-86c6642d/`，不进入 Git。
 
 ## 操作前对照的已有经验
 
@@ -35,7 +35,7 @@ Magisk 31.0 官方 APK SHA-256 为 `2c8a488b9a5293e578e95ae4f07e3c57aba4feec4a52
 
 本轮一度并行运行 ADB 端口 5037/5038：USB G100 实际被默认 5037 接管，5038 只显示 Wi-Fi G100 S。已关闭多余 server 并恢复以精确序列号操作；以后不能把某个端口没有列出设备误判为启动失败。此经验已写入 `AGENTS.md`。
 
-已用通用 `tools/ci/build_host_seed.py`、`assemble_product.py`、`assemble_release.py` 将 LXC、Rungic Android APK、Termux/PulseAudio、rootfs gzip 种子、Magisk 31.0 离线种子和首启脚本放入 `product`。最终 EROFS 大小 6,787,354,624 字节，低于本机 `product_a` 的 7,445,790,720 字节；SHA-256 为 `12d3a9fc9b38b8a1fddad7f64bc02c541cfcfdc131ca1d4b59a5759bf4948d9c`。`fsck.erofs`、原有 inode 权限/SELinux/mtime 元数据核对和刷机目录全文件 SHA 校验通过。完整目录绑定序列号 `<DEVICE-SERIAL>`，包含原厂 32 个 super 分片、候选 boot/init_boot、AVB flags=3 派生镜像及 fastbootd 用 product sparse 镜像。此时仍是**离线候选**，不是已验收发行版。
+已用通用 `tools/ci/build_host_seed.py`、`assemble_product.py`、`assemble_release.py` 将 LXC、Rungic Android APK、Termux/PulseAudio、rootfs gzip 种子、Magisk 31.0 离线种子和首启脚本放入 `product`。最终 EROFS 大小 6,787,354,624 字节，低于本机 `product_a` 的 7,445,790,720 字节；SHA-256 为 `12d3a9fc9b38b8a1fddad7f64bc02c541cfcfdc131ca1d4b59a5759bf4948d9c`。`fsck.erofs`、原有 inode 权限/SELinux/mtime 元数据核对和刷机目录全文件 SHA 校验通过。完整目录绑定序列号 `G100-DEVICE-SERIAL`，包含原厂 32 个 super 分片、候选 boot/init_boot、AVB flags=3 派生镜像及 fastbootd 用 product sparse 镜像。此时仍是**离线候选**，不是已验收发行版。
 
 首次完整试刷从 bootloader 开始。Motorola 的 `version-bootloader` fastboot 输出按 `[0]`/`[1]` 分段，拼接后比 Android `ro.bootloader` 少末尾一字符；脚本初版两次在任何写入前安全拒绝。修正后将实机 fastboot 原样值与 Android 属性分别写入运行实例并严格比对。bootloader 写入第一个原厂 `super` 分片后在第二片 USB 传输中失联，主机 `strace` 显示卡在 `USBDEVFS_REAPURB`、USB reset 后枚举报 `error -71`。用户恢复 bootloader 后改用 fastbootd 写入 32 片原厂 `super`，再写候选 `product`、GKI `boot` 和 Magisk `init_boot`；完整刷机命令成功返回。
 
@@ -59,7 +59,7 @@ G100 S 的历史边界也须完整表述：11 篇确实验证了简单 Magisk、
 
 ## 固定其余分区的 init_boot 对照（2026-09-28）
 
-用户授权后，从 Recovery 经 `adb -P 5037 -s <DEVICE-SERIAL> reboot bootloader` 切换成功。核对 product=portov、sku=XT2533-4、current-slot=a、已解锁、bootloader 版本及电压 4357 mV，再校验简单 Magisk 镜像 SHA-256 `3d83ee1c3f5166f4c4b47998c4c6530eeef2f5fb63504a983d3711d4b22e6084`。仅写入 `init_boot_a` 并重启，没有擦除数据、改槽或重刷其他分区。写入日志为 `device/v4-compare-simple-initboot.log`。
+用户授权后，从 Recovery 经 `adb -P 5037 -s G100-DEVICE-SERIAL reboot bootloader` 切换成功。核对 product=portov、sku=XT2533-4、current-slot=a、已解锁、bootloader 版本及电压 4357 mV，再校验简单 Magisk 镜像 SHA-256 `3d83ee1c3f5166f4c4b47998c4c6530eeef2f5fb63504a983d3711d4b22e6084`。仅写入 `init_boot_a` 并重启，没有擦除数据、改槽或重刷其他分区。写入日志为 `device/v4-compare-simple-initboot.log`。
 
 用户确认 Android 已启动，USB 随后枚举为 Android 的 `22b8:2e82`。这证明当前自制 GKI、v4 product 与当前数据状态至少能够启动 Android，优先调查定制 init_boot 与简单 Magisk 镜像之间的差异。它还不能定位到某条脚本，也不能替代完整清数据首启验收；切换镜像前后的启动尝试可能已改变数据状态。当前等待重新开启 USB 调试，以采集系统、Magisk 和 Recovery 留存日志；不要先手工补装运行文件而覆盖诊断现场。
 
@@ -86,7 +86,7 @@ ADB 重新授权后实测 `sys.boot_completed=1`、SELinux Enforcing，init_boot
 
 ## 账户与桌面基础验收（2026-09-28，重新连接后）
 
-USB 恢复为 `<DEVICE-SERIAL>` / XT2533-4 / portov 后完成以下检查，原始材料保存在 `device/v4-account-acceptance.txt`、`v4-account-desktop.png`、`v4-account-drawer.png`、`v4-purity-acceptance.json`、`v4-ai-package-state.txt`：
+USB 恢复为 `G100-DEVICE-SERIAL` / XT2533-4 / portov 后完成以下检查，原始材料保存在 `device/v4-account-acceptance.txt`、`v4-account-desktop.png`、`v4-account-drawer.png`、`v4-purity-acceptance.json`、`v4-ai-package-state.txt`：
 
 - `account-status` 为 configured=true，UID 1000 的账户与家目录均已更新；不读取或记录密码。
 - Android `sys.boot_completed=1`、SELinux Enforcing；LXC RUNNING，容器 systemd 为 running，系统级和 UID 1000 用户级 failed units 均为 0，`dpkg --audit` 无输出。
@@ -119,7 +119,7 @@ v5 同时纳入 Termux 空目录处理、APK ARM64 JNI 预装、账户启动音�
 
 新 product 为 6,938,972,160 字节（分区余量 506,818,560 字节），SHA-256 `43cf711aeef866d27504d3af71180c81c5e51fecceb19c47b97b3adc630d0f3d`。EROFS fsck、原厂元数据保持、所有输入报告交叉核验及发行目录 55 个文件的 SHA 校验通过。发行组装源码提交 `bf2f52383f9274b0bdb4fd24c5c750edb442b58f`；目录为 `.work/ci/runs/portov-20260927-86c6642d/release/portov-20260928.3/`。
 
-再次核对 USB 序列号、XT2533-4、电量 100% 后停止 LXC，同步数据并自动重启到 bootloader。使用发行包自身 `flash.py --serial <DEVICE-SERIAL> --yes-wipe` 开始完整刷写；fastbootd 转换成功，正在顺序写入原厂分片。此段只记录刷写已开始，首启/安装/桌面验收尚未完成。日志为 `release-v6-flash-console.log` 和发行目录 `flash.log`；状态 `device/v6-release-status.json` 仍禁止清理缓存。
+再次核对 USB 序列号、XT2533-4、电量 100% 后停止 LXC，同步数据并自动重启到 bootloader。使用发行包自身 `flash.py --serial G100-DEVICE-SERIAL --yes-wipe` 开始完整刷写；fastbootd 转换成功，正在顺序写入原厂分片。此段只记录刷写已开始，首启/安装/桌面验收尚未完成。日志为 `release-v6-flash-console.log` 和发行目录 `flash.log`；状态 `device/v6-release-status.json` 仍禁止清理缓存。
 
 ### 清数据首启结果及首次账户重试
 

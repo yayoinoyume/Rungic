@@ -38,7 +38,7 @@ G100 / `portov_cn` / `W1VT36H.1-51-8` 已增量安装 **APK 2.20（68）与 Agen
 
 ## G100 只读结果
 
-- 两个 ADB server 均检查：USB G100 当前在 **5037**，不是上轮剪贴板工作的 5038；序列号 `<DEVICE-SERIAL>`。另有 G100 S Wi-Fi 连接，本轮未操作。
+- 两个 ADB server 均检查：USB G100 当前在 **5037**，不是上轮剪贴板工作的 5038；序列号 `G100-DEVICE-SERIAL`。另有 G100 S Wi-Fi 连接，本轮未操作。
 - 指纹：`motorola/portov_cn/portov:16/W1VT36H.1-51-8/e9ec8-e96731:user/release-keys`；默认拨号应用 `com.android.dialer`。
 - `dumpsys media.audio_policy`：配置来自 **AIDL HAL**，当前 `AUDIO_MODE_NORMAL`。
 - available output 有 `telephony_tx`，available input 有 `telephony_rx`。
@@ -95,7 +95,7 @@ G100 / `portov_cn` / `W1VT36H.1-51-8` 已增量安装 **APK 2.20（68）与 Agen
 
 ## Realtime 接入与第二轮部署（2026-09-29，未完成双向验收）
 
-执行时现场核验：开发机 `mibook` / x86_64；目标仍为 5037 / `<DEVICE-SERIAL>` / G100。Mac mini 构建端现场返回 `chou-Mac-mini.local` / arm64，`scutil --proxy` 的 HTTP/HTTPS 端口为 6152。这里只记录本次事实。
+执行时现场核验：开发机 `mibook` / x86_64；目标仍为 5037 / `G100-DEVICE-SERIAL` / G100。Mac mini 构建端现场返回 `chou-Mac-mini.local` / arm64，`scutil --proxy` 的 HTTP/HTTPS 端口为 6152。这里只记录本次事实。
 
 用户指定的 `/home/kevinzhow/.config/rungic-voice-agent/openai-api-key` 实际在 **G100 的 Linux 容器**，本机同路径不存在。按容器原路径读取，权限从 0644 收紧到 0600；未复制、输出或提交密钥。真实 WebSocket 返回 `session.created`、模型 `gpt-realtime-2.1-mini`；保留项目既有模型。
 
@@ -162,7 +162,7 @@ G100 / `portov_cn` / `W1VT36H.1-51-8` 已增量安装 **APK 2.20（68）与 Agen
 
 ## 权限恢复后的部署与第三次 Realtime 实验（2026-09-29）
 
-重新现场核验为 mibook / x86_64，系统代理 none、路由可读；G100 `<DEVICE-SERIAL>` 的 USB 当前在 **5038**，5037 仅列出另一台无线设备。固件仍为 `W1VT36H.1-51-8`。Mac mini 实际为 `chou-Mac-mini.local` / arm64，构建继续按 `scutil --proxy` 使用 6152 系统代理。不能沿用早先的 5037 命令。
+重新现场核验为 mibook / x86_64，系统代理 none、路由可读；G100 `G100-DEVICE-SERIAL` 的 USB 当前在 **5038**，5037 仅列出另一台无线设备。固件仍为 `W1VT36H.1-51-8`。Mac mini 实际为 `chou-Mac-mini.local` / arm64，构建继续按 `scutil --proxy` 使用 6152 系统代理。不能沿用早先的 5037 命令。
 
 - 提交 `207b7ec2` 包含通用入口、技能、卡片、状态修复及 Android 诊断；APK **2.19 / versionCode 67** 保留上一候选的 JNI 库和无 OCR 模式，覆盖安装成功。回退 APK 在 `deployment-3/before.apk`。
 - Agent 先构建/安装 **0.366**；实机发现旧卡片转写 delegate 同时把 `text` 用作模型角色和富文本输出，文字绑定冲突，记录存在但屏幕留空。改为外层持有角色、内层 Text 渲染，加入真实 ListModel 转写的 QML 断言。提交 `a6b7f7b4` 构建/安装 **0.367**。`call-card-fixed.png` 已确认双方转写和结果实际显示。

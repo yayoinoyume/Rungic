@@ -6,7 +6,7 @@
 | --- | --- | --- |
 | mibook | 192.0.2.22 | 起初到手机 ping 全丢、TCP 返回 No route to host，邻居表 FAILED |
 | Mac mini | 192.0.2.10 | 到手机 ping 3/3 成功、22 端口收到 OpenSSH banner |
-| USB G100 / <DEVICE-SERIAL> | 192.0.2.69 | 反向 ping mibook 2/2 成功；随后 mibook 学到手机 MAC，ping 与 SSH 恢复 |
+| USB G100 / G100-DEVICE-SERIAL | 192.0.2.69 | 反向 ping mibook 2/2 成功；随后 mibook 学到手机 MAC，ping 与 SSH 恢复 |
 
 ## 已确认
 

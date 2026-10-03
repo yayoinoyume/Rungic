@@ -1,6 +1,6 @@
 # moto g100（XT2533-4）Android 16 镜像来源盘点
 
-记录日期：2026-09-27。本文只针对 USB 序列号 `<DEVICE-SERIAL>` 的 `portov_cn`；原项目开发机 `XT2537-4 / mumba_cn` 是另一台设备。所有实机操作均为读取和一次 fastboot 往返；没有刷写、解锁或改动分区。
+记录日期：2026-09-27。本文只针对 USB 序列号 `G100-DEVICE-SERIAL` 的 `portov_cn`；原项目开发机 `XT2537-4 / mumba_cn` 是另一台设备。所有实机操作均为读取和一次 fastboot 往返；没有刷写、解锁或改动分区。
 
 ## 实机事实
 
@@ -15,7 +15,7 @@
 | 启动与安全 | 槽 `a`，bootloader unlocked，verified boot `orange`，SELinux Enforcing |
 | 存储 | 动态分区 `super`；物理分区有 `boot_a/b`、`init_boot_a/b`、`vendor_boot_a/b`、`dtbo_a/b`、`vbmeta_a/b` 等 |
 
-读取方式：`adb -s <DEVICE-SERIAL> shell getprop`、`uname`、`/proc/meminfo`、`/sys/class/kgsl/kgsl-3d0/gpu_model` 和 `/dev/block/by-name`。另一台 G100 S 的 SoC 是 SM6435，见 [设备记录](01-device.md)。不能跨机复用 boot、vendor_boot、dtbo、GPT 或射频固件。
+读取方式：`adb -s G100-DEVICE-SERIAL shell getprop`、`uname`、`/proc/meminfo`、`/sys/class/kgsl/kgsl-3d0/gpu_model` 和 `/dev/block/by-name`。另一台 G100 S 的 SoC 是 SM6435，见 [设备记录](01-device.md)。不能跨机复用 boot、vendor_boot、dtbo、GPT 或射频固件。
 
 ## 现有固件与提取能力
 

@@ -257,7 +257,7 @@ core、完整日志、账户/路径/文档内容不默认上传。原始证据�
 
 ### 环境、版本与回退
 
-现场核验开发机为 mibook/x86_64，默认路由经 192.0.2.1，系统代理为 none；Mac mini 构建端为 ARM64，使用现场读取的 Surge 6152 代理，Ubuntu 26.04 ARM64 容器及 Qt 6.10.2。USB G100 为 `<DEVICE-SERIAL>` / `portov` / `XT2533_4`，Android 16 `W1VT36H.1-51-8`，ADB 5038；同端口的 Wi-Fi G100 S 未操作。容器代理保持用户指定的 192.0.2.10:6152。
+现场核验开发机为 mibook/x86_64，默认路由经 192.0.2.1，系统代理为 none；Mac mini 构建端为 ARM64，使用现场读取的 Surge 6152 代理，Ubuntu 26.04 ARM64 容器及 Qt 6.10.2。USB G100 为 `G100-DEVICE-SERIAL` / `portov` / `XT2533_4`，Android 16 `W1VT36H.1-51-8`，ADB 5038；同端口的 Wi-Fi G100 S 未操作。容器代理保持用户指定的 192.0.2.10:6152。
 
 本轮是已有系统上的增量发布，不是清数据刷机或首启验收。保留实际已安装的 cast `0.374+cast2` 和 Android APK/宿主载荷；不能用较旧 release 清单覆盖这些组件。第一次部署前保存整 rootfs 快照，后续修正继续保留该快照，未把中间有问题的版本提交成新回退基线。快照不包含用户 home，卡片状态与登录配置仍在 home 中。SSH socket 保持 enabled/active。
 
@@ -352,7 +352,7 @@ ARM64 Ubuntu 26.04 / Qt 6.10.2 的 C++ 检查共 19 项通过（17 个测试方�
 
 ### G100 第一轮实机闭环（20260930.8）
 
-USB 精确序列号 `<DEVICE-SERIAL>`，开发主机 mibook/x86_64、系统代理 none，构建端现场核验 Mac mini/ARM64、Surge 6152 与 Qt 6.10.2，手机代理仍为 192.0.2.10:6152。增量部署 suggestions `0.417`、voice-agent `0.415`，其余已安装基线与 Android 载荷保留；8 项 smoke 首遍通过、无 flaky，camera 跳过。schema 1 已备份并迁移，旧结果和对话保留；旧“无足够证据”的文字方案在实机无应用按钮，条件提醒菜单不再提供进程名推断的选项。实际卡片点击、同实例恢复、栏目入口、组件/抽屉手势与预约通知跳转复验通过。
+USB 精确序列号 `G100-DEVICE-SERIAL`，开发主机 mibook/x86_64、系统代理 none，构建端现场核验 Mac mini/ARM64、Surge 6152 与 Qt 6.10.2，手机代理仍为 192.0.2.10:6152。增量部署 suggestions `0.417`、voice-agent `0.415`，其余已安装基线与 Android 载荷保留；8 项 smoke 首遍通过、无 flaky，camera 跳过。schema 1 已备份并迁移，旧结果和对话保留；旧“无足够证据”的文字方案在实机无应用按钮，条件提醒菜单不再提供进程名推断的选项。实际卡片点击、同实例恢复、栏目入口、组件/抽屉手势与预约通知跳转复验通过。
 
 真实 GPT-6 Luna + API Key 对第二条历史桌面崩溃完成只读调查，期间主动重启建议服务，原任务 ID 与原对话保持关联，最终为 `finished`，结果回写成功，`planStatus=needs_investigation`。Agent 找到与显示模式变更相关的已有 KWayland 修复记录并确认本机已有修复包，但缺少本报告回溯，因此仍未确认根因，没有实施系统修复、安装或重启。不能把调查完成等同于修好了手机。
 
@@ -380,7 +380,7 @@ USB 精确序列号 `<DEVICE-SERIAL>`，开发主机 mibook/x86_64、系统代�
 
 复用来源：原生 Folio 6.6.5 的 Applet 与网格接口沿用前述源码核验，新增 `com.rungic.agent` 为独立 applet，通过空闲网格迁移放置，保留已有组件和收藏，不覆盖已删除选择。像素图标由本项目 QML 几何绘制，GPL-2.0-or-later，无外来图片素材。
 
-[Codex App Server 官方协议](https://learn.chatgpt.com/docs/app-server) 提供 `thread/tokenUsage/updated`、`account/read`、`account/rateLimits/read` 和 `account/usage/read`。本机现场核对 G100 `<DEVICE-SERIAL>` / ADB 5038、Codex **0.156.1**（仓库固定 SHA、Apache-2.0）：通过该已安装二进制生成 JSON schema，确认窗口含 `usedPercent/windowDurationMins/resetsAt`，账户用量有 nullable summary/daily buckets，token 事件有 thread/turn 与 total/last breakdown。不是只凭最新文档推断已装版本。订阅账户读取真实额度与重置；API Key 不伪造订阅额度。会话 total 用作累计高水位、last 仅作为首次观测基数，不把同一回合内的多次模型请求重复或遗漏累计。按账户不可逆指纹分区，本地统计注明仅本机收到的 Codex 用量，排除 Realtime，不等同账单。
+[Codex App Server 官方协议](https://learn.chatgpt.com/docs/app-server) 提供 `thread/tokenUsage/updated`、`account/read`、`account/rateLimits/read` 和 `account/usage/read`。本机现场核对 G100 `G100-DEVICE-SERIAL` / ADB 5038、Codex **0.156.1**（仓库固定 SHA、Apache-2.0）：通过该已安装二进制生成 JSON schema，确认窗口含 `usedPercent/windowDurationMins/resetsAt`，账户用量有 nullable summary/daily buckets，token 事件有 thread/turn 与 total/last breakdown。不是只凭最新文档推断已装版本。订阅账户读取真实额度与重置；API Key 不伪造订阅额度。会话 total 用作累计高水位、last 仅作为首次观测基数，不把同一回合内的多次模型请求重复或遗漏累计。按账户不可逆指纹分区，本地统计注明仅本机收到的 Codex 用量，排除 Realtime，不等同账单。
 
 用量聚合、持久化及服务在 C++；现有 Python Codex 桥仅转发事件及只读 RPC，未新增 Python 生产服务。组件和 APP 共用相同只读数据契约，不另起 Codex 或模型请求。重置时间到达只标记等待刷新，不能本地把已用额度清零。用户点击用量进入 APP 专页，像素图标进入 Agent。代理/构建机器现场核验仍为 mibook/x86_64、系统代理 none、Mac mini ARM64/Surge 6152；手机代理 192.0.2.10:6152。
 
@@ -412,7 +412,7 @@ G100 的真实 GPT-6 Luna / API Key 请求不调用工具，只回复验收文�
 
 ### 堆叠手势验收：20260930.13
 
-USB G100 `<DEVICE-SERIAL>` / ADB 5038，现场核验开发机 mibook/x86_64、系统代理 none，构建端 Mac mini/ARM64、Surge 6152；手机仍为 `portov`、aarch64、192.0.2.69，容器代理 192.0.2.10:6152。部署 suggestions **0.461**，voice-agent **0.453**、design **0.393**、Plasma Mobile **6.6.5-0ubuntu0.1+rungic8** 保留。包更新的自动重启集合未包含 suggestions，故部署后明确重启建议服务、plasmashell 和助理 UI，核验实际加载新 QML 后才做以下手势测试；未重启 Codex 后端或改变登录方式。
+USB G100 `G100-DEVICE-SERIAL` / ADB 5038，现场核验开发机 mibook/x86_64、系统代理 none，构建端 Mac mini/ARM64、Surge 6152；手机仍为 `portov`、aarch64、192.0.2.69，容器代理 192.0.2.10:6152。部署 suggestions **0.461**，voice-agent **0.453**、design **0.393**、Plasma Mobile **6.6.5-0ubuntu0.1+rungic8** 保留。包更新的自动重启集合未包含 suggestions，故部署后明确重启建议服务、plasmashell 和助理 UI，核验实际加载新 QML 后才做以下手势测试；未重启 Codex 后端或改变登录方式。
 
 ARM64 C++ 24 项通过。40 事项 / 39 组的真实服务集成分别执行普通 widget、带真实 QTest pointer 的 widget 和 APP 列表预览，均无 QML warning。指针测试覆盖上下切换、短拖动回弹、首尾边界、外层偏移不随堆叠切换、标题拖动滚动组列表；静态堆叠仅正面 1 项获得回执，实际翻阅后两项分别获得回执，均没有 opened 回执。首轮测试因 QObject 树找不到视觉 delegate、复用跨刷新销毁的测试指针而失败，改为按 visual parent 查找并在刷新后重新获取；QTest 合成时间戳不等于真实时间，短拖动测试改为实际等待。另修复按压态原有的未定义 `Theme.hover`，使用已有 `Theme.fill2`，最终重跑通过。
 

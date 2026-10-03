@@ -81,4 +81,4 @@ APK 与 native `.so` 必须一起构建。账户助手、宿主控制器和包�
 
 采用上游已有 KConfig 开关：新增 `plasma/config/etc/xdg/plasmamobilerc`，设置 `[InitialStart] wizardRun=true`。由 `rungic-plasma-config` 打包为系统默认，适用于新账户，不依赖复制个人 home 或首次启动脚本逐用户写配置。保留用户显式覆盖的能力；需要查看向导时仍可手动 `plasma-mobile-initial-start --test-wizard`。不删除程序、不关闭 kded 模块，envmanager 的正常桌面配置继续运行。Rungic 的安装 ready、账户配置、真实画面 loading 门槛保持原样。
 
-G100 / portov / 5038 / <DEVICE-SERIAL> 已部署该单一配置文件，并关闭当前已有的一个欢迎向导进程。验证：隔离空 HOME/XDG_CONFIG_HOME，显式 phone 平台，KConfig 继承 true；实际 ARM64 欢迎程序用 offscreen 平台运行，返回 0 并报告不启动向导；现有账户按实际会话环境重新启动该程序同样直接退出。证据 `.work/experiments/g100-welcome-20260929/verification.json`。这是干净配置与现有账户验收，不是重新清数据刷入整包的验收；镜像后续构建通过配置包获得该默认值。
+G100 / portov / 5038 / G100-DEVICE-SERIAL 已部署该单一配置文件，并关闭当前已有的一个欢迎向导进程。验证：隔离空 HOME/XDG_CONFIG_HOME，显式 phone 平台，KConfig 继承 true；实际 ARM64 欢迎程序用 offscreen 平台运行，返回 0 并报告不启动向导；现有账户按实际会话环境重新启动该程序同样直接退出。证据 `.work/experiments/g100-welcome-20260929/verification.json`。这是干净配置与现有账户验收，不是重新清数据刷入整包的验收；镜像后续构建通过配置包获得该默认值。

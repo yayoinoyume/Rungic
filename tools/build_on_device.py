@@ -91,13 +91,13 @@ class MacMini:
     with scutil each session; neither ssh commands nor containers pick it up by themselves): every
     command in the container gets http(s)_proxy, a local proxy reached as host.docker.internal."""
     name, jobs = 'macmini', 10
-    SSH = ['ssh', '-o', 'BatchMode=yes', '-o', 'ConnectTimeout=10', 'choukevin@build-host.internal']
+    SSH = ['ssh', '-o', 'BatchMode=yes', '-o', 'ConnectTimeout=10', 'build-user@build-host.local']
     DOCKER = '/usr/local/bin/docker'
     CONTAINER = 'rungic-build'
     # The phone reaches the build container directly over the LAN with its own restricted key
     # (tools/pq/rungic-transfer, docs/71): put DIR / get FILE under /root/rungic-build.
     PHONE_SSH = ('ssh -i /root/.ssh/id_ed25519_buildhost -o BatchMode=yes -o ConnectTimeout=10 '
-                 '-o StrictHostKeyChecking=accept-new choukevin@192.0.2.10')
+                 '-o StrictHostKeyChecking=accept-new build-user@192.0.2.10')
     ready = False
     proxy_env = None
 

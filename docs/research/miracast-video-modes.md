@@ -1,6 +1,6 @@
 # Miracast 视频模式：真实能力、精确选择与验收
 
-2026-09-29，执行端现场核验为 mibook / x86_64，默认路由 192.0.2.1，系统代理 none。实机为 ADB 5038 的 USB G100 `<DEVICE-SERIAL>`，Android 16 / `W1VT36H.1-51-8`，SELinux Enforcing；接收端为 UGREEN。没有操作同时在线的 G100 S。本轮针对运行中的系统升级，不是整包清数据验收。
+2026-09-29，执行端现场核验为 mibook / x86_64，默认路由 192.0.2.1，系统代理 none。实机为 ADB 5038 的 USB G100 `G100-DEVICE-SERIAL`，Android 16 / `W1VT36H.1-51-8`，SELinux Enforcing；接收端为 UGREEN。没有操作同时在线的 G100 S。本轮针对运行中的系统升级，不是整包清数据验收。
 
 ## 设计边界
 

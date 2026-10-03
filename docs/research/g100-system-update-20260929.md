@@ -4,7 +4,7 @@
 
 ## 升级前核实
 
-目标为 ADB 5037 / `<DEVICE-SERIAL>`，G100 / portov_cn，Android 16 `W1VT36H.1-51-8`。G100 S 与 X70 的部署结果不作为本机验收。
+目标为 ADB 5037 / `G100-DEVICE-SERIAL`，G100 / portov_cn，Android 16 `W1VT36H.1-51-8`。G100 S 与 X70 的部署结果不作为本机验收。
 
 | 组件 | G100 升级前 | 本轮目标 |
 | --- | --- | --- |

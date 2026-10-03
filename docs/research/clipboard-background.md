@@ -5,7 +5,7 @@
 - AOSP `android16-release` 的 ClipboardService 与 IClipboard：后台读取按包的 READ_CLIPBOARD_IN_BACKGROUND 权限、UID/包归属与 AppOps 校验；写入本来不要求焦点。默认设备的剪贴板和显示输出不是同一个概念。来源：https://android.googlesource.com/platform/frameworks/base/+/refs/heads/android16-release/services/core/java/com/android/server/clipboard/ClipboardService.java （Apache-2.0）。原始核查副本在 `.work/research/clipboard-backend/`，不进入仓库。
 - scrcpy v3.3.4（Apache-2.0）：ClipboardManager wrapper 已从手写 IClipboard 反射签名迁移到 Android framework ClipboardManager；FakeContext 提供 Shell 包/归因身份，包含 Samsung service context 修正。v2.7 手写签名分支较多，维护成本更高。来源：https://github.com/Genymobile/scrcpy/tree/v3.3.4/server/src/main/java/com/genymobile/scrcpy 。仅复用架构方法，本次不复制该源码。
 - 选用独立 app_process + Shell UID + framework ClipboardManager。不用普通 APK 后台 Service（不能获得后台读取权限），不用输入法占位，不引入 scrcpy 显示/控制协议。复用本项目 Magisk 控制器启动机制；业务桥仅提供有限的纯文本协议，不提供命令执行。
-- G100 / portov_cn / Android 16，5038 / <DEVICE-SERIAL>：独立 Shell 身份探针成功读取并注册 ClipboardManager 监听。仅 createPackageContext 不够：系统 Context 的 opPackage 仍为 android，触发包/UID 不匹配；需显式 ContextWrapper 与 framework 构造器。root 身份返回空不能视为权限成功；正式服务使用 UID 2000。探针失败仅在独立进程，不改系统服务。
+- G100 / portov_cn / Android 16，5038 / G100-DEVICE-SERIAL：独立 Shell 身份探针成功读取并注册 ClipboardManager 监听。仅 createPackageContext 不够：系统 Context 的 opPackage 仍为 android，触发包/UID 不匹配；需显式 ContextWrapper 与 framework 构造器。root 身份返回空不能视为权限成功；正式服务使用 UID 2000。探针失败仅在独立进程，不改系统服务。
 - 桌面侧通过 Unix socket 直接连接后台服务，Klipper 保持历史职责；APK 旧接口仅转发。生命周期跟随 Linux 容器，不跟随 Activity/显示窗口。抽象 Unix socket 可达性依赖当前共享 Android 网络命名空间的 LXC 架构；客户端仍须 peer UID 验证。
 
 ## 验收计划
