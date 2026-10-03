@@ -1,35 +1,25 @@
-# Rungic munch build kit - key file checksums
-# generated: 2026-10-01T22:56:31+08:00
+# munch-build-kit 关键文件 SHA-256
+# 生成时间：2026-10-01T22:56:31+08:00（原归档核对时）
+# 路径为本目录内的仓库路径；产出的 boot 镜像 / APK / deb 等大文件不在仓库中，
+# 其哈希保留在本清单底部，供从官方源或本地重建后核对。
 
-## kernel final config
-46de70f8251af9bd13db8e0674afdd461371aed29771a1ebcc4453c8dba84cab  02-kernel/configs/config.final
-46de70f8251af9bd13db8e0674afdd461371aed29771a1ebcc4453c8dba84cab  02-kernel/kernel-src/.config
-3dbfef15087e6bb37ae3557d14753e48f1a6b7bb9633a69e70271f19714fa871  02-kernel/inputs/stock.config
+## 仓库内文件
+46de70f8251af9bd13db8e0674afdd461371aed29771a1ebcc4453c8dba84cab  kernel-final/config.final
+3dbfef15087e6bb37ae3557d14753e48f1a6b7bb9633a69e70271f19714fa871  kernel/inputs/stock.config
+ee0924269d6b1f36fb3df21e2e00545fc9a944f84466bdf91d68bdfe5264aa20  kernel-final/Module.symvers.final
+ee0924269d6b1f36fb3df21e2e00545fc9a944f84466bdf91d68bdfe5264aa20  kernel/inputs/Module.symvers.lxc6
+7604a0f4dda0673cfa2813c930ca7d8684ec71a863eb8fd370016eda937f7d1d  kernel/inputs/Module.symvers.stock
 
-## kernel symbols
-ee0924269d6b1f36fb3df21e2e00545fc9a944f84466bdf91d68bdfe5264aa20  02-kernel/configs/Module.symvers.final
-ee0924269d6b1f36fb3df21e2e00545fc9a944f84466bdf91d68bdfe5264aa20  02-kernel/kernel-src/Module.symvers
-ee0924269d6b1f36fb3df21e2e00545fc9a944f84466bdf91d68bdfe5264aa20  02-kernel/inputs/Module.symvers.lxc6
-7604a0f4dda0673cfa2813c930ca7d8684ec71a863eb8fd370016eda937f7d1d  02-kernel/inputs/Module.symvers.stock
-
-## kernel image
-ecc3ddab348fae59e3865edb6d0d475c4aa55afc5803f33546dd94f55ed1a8d4  02-kernel/configs/Image
-
-## kernel source archives
-e209032cb564c7c836d54b748527c68c4999c4c751650ba9faf2e104fda4317b  02-kernel/kernel-src.tar.gz
-6cd51bc5002e1c3f93c8f388716aaf48ac3efe19279e9b1c8291f69172927cb4  02-kernel/clang-prebuilts.tar.gz
-
-## boot image
-cb8fae0edeaf246256f9cf965ced8e52e3d86f8abf762a0b0755fd720626aa1d  06-boot/boot-munch-ionheap-magisk.img
-
-## apk
-5b95a9053c1b6397b7da1e34a1f8debce04510766621b15f31045d6fb75a00e4  05-apk/Rungic-2.24.apk
-
-## mesa debs
-8297fa017c0082648f3fb3c061c064fd9da21f38f602708e3af36d0038f1aed2  03-mesa/libegl-mesa0_26.3.0~devel20260824+rungic3_arm64.deb
-ca7a69e3270b82173a6fc8a1c962645d069750ba2356c2073f020715040d9045  03-mesa/libgbm-dev_26.3.0~devel20260824+rungic3_arm64.deb
-a2dab3230d43b8d062abbba3ed3ae1e8664527f43b698a72f4df126da1f3f721  03-mesa/libgbm1_26.3.0~devel20260824+rungic3_arm64.deb
-eda732194248cb106b2f93a1381b0b7b50ce50c593fd52e14648049d1631c578  03-mesa/libgl1-mesa-dri_26.3.0~devel20260824+rungic3_arm64.deb
-7d0d7d540304a1b7dada552c4f1f3afeb880fa86f9b4f2d9c764baf01bd62a13  03-mesa/libglx-mesa0_26.3.0~devel20260824+rungic3_arm64.deb
-9ae8778ae6fe0c807149ed897b8453c5fdae49f1e249cbb6e8b126fd2a15b1c0  03-mesa/mesa-libgallium_26.3.0~devel20260824+rungic3_arm64.deb
-ebb1e3539e05c48f5b75f92119ba560921d9622705ce40bc6f7c8ec4db101a2c  03-mesa/mesa-vulkan-drivers_26.3.0~devel20260824+rungic3_arm64.deb
+## 重建产物（文件不在仓库，按 README 获取方式重建后核对）
+ecc3ddab348fae59e3865edb6d0d475c4aa55afc5803f33546dd94f55ed1a8d4  编译产物 Image
+cb8fae0edeaf246256f9cf965ced8e52e3d86f8abf762a0b0755fd720626aa1d  boot-munch-ionheap-magisk.img
+e209032cb564c7c836d54b748527c68c4999c4c751650ba9faf2e104fda4317b  kernel-src.tar.gz（LineageOS lineage-23.2 源码包）
+6cd51bc5002e1c3f93c8f388716aaf48ac3efe19279e9b1c8291f69172927cb4  clang-prebuilts.tar.gz（AOSP clang-r416183b 原始包）
+5b95a9053c1b6397b7da1e34a1f8debce04510766621b15f31045d6fb75a00e4  Rungic-2.24.apk
+8297fa017c0082648f3fb3c061c064fd9da21f38f602708e3af36d0038f1aed2  libegl-mesa0_26.3.0~devel20260824+rungic3_arm64.deb
+ca7a69e3270b82173a6fc8a1c962645d069750ba2356c2073f020715040d9045  libgbm-dev_26.3.0~devel20260824+rungic3_arm64.deb
+a2dab3230d43b8d062abbba3ed3ae1e8664527f43b698a72f4df126da1f3f721  libgbm1_26.3.0~devel20260824+rungic3_arm64.deb
+eda732194248cb106b2f93a1381b0b7b50ce50c593fd52e14648049d1631c578  libgl1-mesa-dri_26.3.0~devel20260824+rungic3_arm64.deb
+7d0d7d540304a1b7dada552c4f1f3afeb880fa86f9b4f2d9c764baf01bd62a13  libglx-mesa0_26.3.0~devel20260824+rungic3_arm64.deb
+9ae8778ae6fe0c807149ed897b8453c5fdae49f1e249cbb6e8b126fd2a15b1c0  mesa-libgallium_26.3.0~devel20260824+rungic3_arm64.deb
+ebb1e3539e05c48f5b75f92119ba560921d9622705ce40bc6f7c8ec4db101a2c  mesa-vulkan-drivers_26.3.0~devel20260824+rungic3_arm64.deb
