@@ -155,8 +155,9 @@ desktop_boost() {
     mkdir -p "$CPUCTL"
     adopt_desktop
     if [ "$1" = on ]; then min=50 shares=5120; else min=0 shares=1024; fi
-    echo "$min" > "$CPUCTL/cpu.uclamp.min"
-    echo "$shares" > "$CPUCTL/cpu.shares"
+    # Some 4.19 kernels expose cpuctl without uclamp. Write whichever knobs exist.
+    [ -w "$CPUCTL/cpu.uclamp.min" ] && echo "$min" > "$CPUCTL/cpu.uclamp.min" || true
+    [ -w "$CPUCTL/cpu.shares" ] && echo "$shares" > "$CPUCTL/cpu.shares" || true
 }
 # Linux's own network (docs/116, Settings -> Services): pasta, as the Rungic app's Android uid,
 # makes the connections of the container's own network namespace, and relays the abstract sockets
