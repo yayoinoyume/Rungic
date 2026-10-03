@@ -1,0 +1,26 @@
+# LineageOS 4.19 内核编译环境（munch）—— 使用中科大镜像源
+FROM ubuntu:24.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+ENV TZ=Asia/Shanghai
+
+# Docker 桥接网络可直连，但官方源太慢，换中科大（实测 2MB/s）
+RUN sed -i 's|http://archive.ubuntu.com/ubuntu|http://mirrors.ustc.edu.cn/ubuntu|g; \
+            s|http://security.ubuntu.com/ubuntu|http://mirrors.ustc.edu.cn/ubuntu|g; \
+            s|http://ports.ubuntu.com/ubuntu-ports|http://mirrors.ustc.edu.cn/ubuntu-ports|g' \
+        /etc/apt/sources.list.d/ubuntu.sources \
+ && apt-get update \
+ && apt-get install -y --no-install-recommends \
+      build-essential bc bison flex libssl-dev libelf-dev \
+      cpio kmod rsync ccache zip unzip python3 python3-pip \
+      zstd device-tree-compiler openssl \
+      ca-certificates curl git wget file \
+      xz-utils lz4 gzip bzip2 locales tzdata rsync \
+ && rm -rf /var/lib/apt/lists/*
+
+ENV LC_ALL=C.UTF-8 LANG=C.UTF-8
+ENV CCACHE_DIR=/ccache
+ENV CCACHE_MAXSIZE=30G
+
+WORKDIR /build
+CMD ["/bin/bash"]

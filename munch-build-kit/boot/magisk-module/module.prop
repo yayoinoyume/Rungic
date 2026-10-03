@@ -1,0 +1,6 @@
+id=lxc6_kernel_modules
+name=LXC6 Kernel Modules
+version=1.0
+versionCode=1
+author=Rungic
+description=Replace the 3 modules under /vendor/lib/modules with LXC6-kernel-matched builds (gspca_main/rmnet_perf/rmnet_shs). Stock ones fail CRC check on the new kernel.
