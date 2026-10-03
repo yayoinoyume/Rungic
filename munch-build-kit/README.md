@@ -67,10 +67,6 @@ adb pull /data/local/tmp/boot-current.img
 | `rootfs-scripts/` | rootfs 制作脚本（mmdebstrap / 16G 镜像 / 填充） |
 | `apk/libxkbcommon/` | Android arm64 libxkbcommon 交叉编译脚本 |
 
-## 与原归档的路径对应
-
-原 `rungic-munch-build-kit/` 归档中的 `02-kernel/kernel-src/`、`02-kernel/clang/`、`03-mesa/`、`04-packages/`、`05-apk/*.apk`、`06-boot/*.img`、`07-rootfs/rootfs-plasma.img` 均为二进制大文件，按上方"大文件获取方式"获取；仓库中只保留脚本、配置与校验值。
-
 ---
 
 以下为原始归档说明（路径按旧归档结构，对照上表使用）：
