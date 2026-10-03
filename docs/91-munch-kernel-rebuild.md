@@ -1,6 +1,6 @@
 # Redmi K40S (munch) LineageOS 内核重编与刷入记录
 
-时间：2026-09-30 晚 至 2026-10-01 凌晨。设备：Redmi K40S（型号 22021211RC，代号 `munch`，序列号 `<DEVICE-SERIAL>`），已刷 LineageOS 23.2 / Android 16（SDK 36），bootloader 已解锁，槽位 `a`，已装 Magisk 31.0。
+时间：2026-09-30 晚 至 2026-10-01 凌晨。设备：Redmi K40S（型号 22021211RC，代号 `munch`，序列号（已隐去）），已刷 LineageOS 23.2 / Android 16（SDK 36），bootloader 已解锁，槽位 `a`，已装 Magisk 31.0。
 
 本篇只记录**实际做过并验证过**的事。看不懂的术语第一次出现时会顺带解释。
 
