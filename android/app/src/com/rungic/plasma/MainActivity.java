@@ -83,6 +83,7 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
         getWindow().setAttributes(attrs);
         immersive();
         frame = new FrameLayout(this);
+        frame.setBackgroundColor(0xFF000000);
         PlatformBridge.applyOrientation(this,getPreferences(MODE_PRIVATE).getString("orientation","portrait"));
         display = new DisplayView();
         pacer = new DisplayPacer(display, () -> initialized,
@@ -281,8 +282,9 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
         // down an edge. Reserve that edge in the host window, keeping portrait
         // edge-to-edge and its Phosh status-bar cutout handling.
         boolean landscape=getResources().getConfiguration().orientation==android.content.res.Configuration.ORIENTATION_LANDSCAPE;
-        int padLeft=landscape && cutout!=null?cutout.getSafeInsetLeft():0;
-        int padRight=landscape && cutout!=null?cutout.getSafeInsetRight():0;
+        int pad=landscape && cutout!=null?Math.max(cutout.getSafeInsetLeft(),cutout.getSafeInsetRight()):0;
+        int padLeft=pad;
+        int padRight=pad;
         if(frame.getPaddingLeft()!=padLeft || frame.getPaddingRight()!=padRight)frame.setPadding(padLeft,0,padRight,0);
         if(cutout!=null) {
             safeTop=Math.max(0,cutout.getSafeInsetTop()-location[1]);
@@ -465,8 +467,8 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
         if(width<=0 || height<=0)return;
         Display.Mode physical=display.getDisplay().getMode();
         int shortEdge=getPreferences(MODE_PRIVATE).getInt("render_short_edge",Math.min(physical.getPhysicalWidth(),physical.getPhysicalHeight()));
-        int w=width>height?Math.max(shortEdge,(int)Math.round(shortEdge*0.5*width/height)*2):shortEdge;
-        int h=height>=width?Math.max(shortEdge,(int)Math.round(shortEdge*0.5*height/width)*2):shortEdge;
+        int w=width>height?Math.max(shortEdge,(int)Math.floor(shortEdge*0.5*width/height)*2):shortEdge;
+        int h=height>=width?Math.max(shortEdge,(int)Math.floor(shortEdge*0.5*height/width)*2):shortEdge;
         if(w==bufferWidth && h==bufferHeight)return;
         bufferWidth=w;bufferHeight=h;
         display.getHolder().setFixedSize(w,h);

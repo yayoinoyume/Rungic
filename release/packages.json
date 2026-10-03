@@ -277,6 +277,11 @@
       "source": "system/rootfs-mount-hook",
       "path": "/data/adb/rungic-plasma/rootfs-mount-hook",
       "mode": "755"
+    },
+    {
+      "source": "system/rungic-autostart.sh",
+      "path": "/data/adb/service.d/rungic-autostart.sh",
+      "mode": "755"
     }
   ],
   "user_restart": {
