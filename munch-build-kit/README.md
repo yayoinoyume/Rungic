@@ -2,21 +2,59 @@
 
 本目录收录 Redmi K40S（代号 `munch`）上运行 Rungic 的全部构建脚本、内核配置与输入文件。仓库本体（本目录的上级）即 Rungic 源码。
 
-## 大文件（不在 git 中，网盘下载）
+## 大文件获取方式
 
-以下文件体积超出 git 合理范围，通过网盘分发，SHA-256 见本目录 `SHA256SUMS.txt`：
+本目录刻意不收录任何大二进制文件。下面 7 个大文件都能通过官方源下载或本地重建得到，不需要任何网盘分发。各产物的 SHA-256 见本目录 `SHA256SUMS.txt`（用于核对重建产物是否与已验证版本一致，二进制重编译因时间戳不同哈希会变，属正常现象）。
 
-| 文件 | 大小 | 说明 |
-|---|---|---|
-| `kernel-src.tar.gz` | 200 MB | LineageOS sm8250 内核源码树（lineage-23.2, commit 71b13e62f057），含 .config 与编译产物 |
-| `clang-prebuilts.tar.gz` | 426 MB | Android clang 12.0.5 (r416183b) 工具链（也可从 AOSP 官方 prebuilts 下载） |
-| `boot-munch-ionheap-magisk.img` | 192 MB | 最终可用 boot 镜像（4.19 内核 + ION system heap + Magisk） |
-| `rootfs-plasma.img` | 306 MB（16 GiB 稀疏） | Ubuntu 26.04 + Plasma rootfs 成品 |
-| `mesa-debs.tar.gz` | — | 自编 Mesa 七包 `26.3.0~devel20260824+rungic3` |
-| `packages-debs.tar.gz` | — | 本地 deb 仓库 37 个包（kwin rungic9 + rungic-* 0.504/0.509） |
-| `Rungic-2.24.apk` | 3.9 MB | 显示宿主 APK（含 Rust/Smithay 合成器与原生库） |
+### 1. 官方源直接下载
 
-**网盘链接：<待填>**
+**内核源码树**（对应 `kernel-src.tar.gz`，约 200 MB）
+
+```bash
+git clone --depth 1 -b lineage-23.2 https://github.com/LineageOS/android_kernel_xiaomi_sm8250
+```
+
+该分支 HEAD 即 `71b13e62f057`，与本文档所有构建步骤使用的 commit 一致。
+
+**Android clang 12.0.5 工具链**（对应 `clang-prebuilts.tar.gz`，约 426 MB）
+
+编译本内核必须使用 AOSP 预编译的 `clang-r416183b`（不要用系统 clang 或 NDK 自带 clang）：
+
+```bash
+# 方式一：AOSP gitiles 直接下载该目录的 tarball（约 400+ MB）
+curl -LO https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/refs/heads/android12-d1-release/clang-r416183b.tar.gz
+
+# 方式二：浅克隆该分支后取出目录
+git clone --depth 1 -b android12-d1-release https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86
+# 取出 linux-x86/clang-r416183b/
+```
+
+`clang-r416183b` 在 `android12-d1-release` 分支下的存在性已核实；解压后 `bin/clang --version` 应输出 `Android (7284624, based on r416183b) clang version 12.0.5`。
+
+### 2. 从手机提取
+
+**带 Magisk 的当前 boot 基底**（重打 boot 镜像的前置条件）
+
+在已 root 的手机上执行：
+
+```bash
+adb shell su -c 'dd if=/dev/block/by-name/boot_a of=/data/local/tmp/boot-current.img'
+adb pull /data/local/tmp/boot-current.img
+```
+
+拿到基底后，用本目录 `boot/pack-boot.sh <新编译的 Image>` 完成内核替换与重打包。注意脚本内 `MB=`（magiskboot 路径）需改为你本机的 magiskboot——它来自 Magisk 官方发行版（https://github.com/topjohnwu/Magisk），也可用 Magisk App 的"安装到 inactive slot"流程获得。
+
+### 3. 本地重建
+
+**编译内核 Image**：`kernel/scripts/build-ion.sh`（最终版）+ `kernel/inputs/`（stock.config、触摸固件、.scmversion）+ `kernel-final/config.final`。构建环境见 `kernel/scripts/Dockerfile.kernel`。要点：触摸固件 `.i` 文件与 `.scmversion` 必须在 `make mrproper` 之后注入；产物 `arch/arm64/boot/Image` 需与三个 vendor `.ko` 一起出（见 `boot/magisk-module/`）。
+
+**Mesa 七包**：`03-mesa/Dockerfile.mesa-cross`（原归档携带的交叉编译定义，主仓库 `packages/mesa/` 配方亦可），构建参数见主仓库 `desktop/mesa-meson-options`。
+
+**37 个本地 deb**（KWin `+rungic9` 五件套 + `rungic-*` 0.504/0.509）：KWin 源码经主仓库 `tools/pq.py source kwin` 生成（上游 `6.6.6` + 16 个 Rungic 补丁），在 ARM64 手机上 `dpkg-buildpackage` 编译；`rungic-*` 用主仓库 `tools/rungic_package.py build <name> --host phone`。
+
+**Rungic APK**：主仓库 `android/build-apk.sh`（Rust + Android NDK），`apk/libxkbcommon/` 提供 Android arm64 `libxkbcommon.so` 的交叉编译脚本（上游源码 https://github.com/xkbcommon/libxkbcommon tag `xkbcommon-1.13.1`，已核实存在）。
+
+**rootfs 镜像**：`rootfs-scripts/`（mkimg-16g.sh 建镜 + populate.sh 填充）。注意：脚本重建出的是干净基础 rootfs；本次适配中做过的 systemd 259→255 降级、pidfd 垫片安装等调试状态需要按主仓库 `docs/91-munch-kernel-rebuild.md` 与文档记录重放。如果手机当前容器运行正常，直接从 `/data/adb/rungic-lxc/images/rootfs.img` 拷出现有镜像是最快的"重建"。
 
 ## 目录结构
 
@@ -31,7 +69,7 @@
 
 ## 与原归档的路径对应
 
-原 `rungic-munch-build-kit/` 归档中的 `02-kernel/kernel-src/`、`02-kernel/clang/`、`03-mesa/`、`04-packages/`、`05-apk/*.apk`、`06-boot/*.img`、`07-rootfs/rootfs-plasma.img` 均为二进制大文件，见上方网盘清单；仓库中只保留脚本、配置与校验值。
+原 `rungic-munch-build-kit/` 归档中的 `02-kernel/kernel-src/`、`02-kernel/clang/`、`03-mesa/`、`04-packages/`、`05-apk/*.apk`、`06-boot/*.img`、`07-rootfs/rootfs-plasma.img` 均为二进制大文件，按上方"大文件获取方式"获取；仓库中只保留脚本、配置与校验值。
 
 ---
 
