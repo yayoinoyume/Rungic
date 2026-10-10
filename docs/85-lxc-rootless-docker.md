@@ -9,6 +9,16 @@
 - 实测（Docker 29.1.3、containerd 2.2.2、Compose 2.40.3、rootlesskit 2.0.2、slirp4netns 1.3.3，均为Ubuntu包）：`hello-world`；镜像已有目录写入；bridge网络出网；`-p 18080:80`在容器内与Android的`127.0.0.1:18080`均可访问；Compose自定义网络内按服务名互访（内置DNS 127.0.0.11）——全部通过。
 - **不支持单容器资源限制**：Android把memory/cpu/cpuset/blkio放在cgroup v1，cgroup v2没有控制器，Docker的`--memory`等不生效（`No memory limit support`）。Docker整体仍受Plasma容器的内存上限约束。原19篇的Android侧Docker同样受此布局限制（推断）。
 
+## munch（Redmi K40S）上的差异：pidfd 垫片会破坏 rootless Docker
+
+2026-10-10，munch 容器（LineageOS 23.2 + Magisk，4.19 内核）上 rootless Docker 起初无法启动，实测根因与 G100 S 不同：
+
+- 该机型内核的 `pidfd` 回移不完整（`pidfd_open` 成功但 `waitid(P_PIDFD)` 返回 `EINVAL`），容器用 `LD_PRELOAD=/usr/local/lib/rungic-pidfd.so` 的垫片让 `pidfd_open` 返回 `ENOSYS`，systemd/GLib 才走 `waitpid` 路径（docs/91）。
+- 垫片原先无条件 `prctl(PR_SET_NO_NEW_PRIVS, 1)`。该标志被所有子进程继承，会让 setuid 的 `newuidmap`/`newgidmap` 失效，`rootlesskit` 建 user namespace 时报 `newuidmap: write to uid_map failed: Operation not permitted`。
+- 修复：垫片优先在**不设 NoNewPrivs**的情况下安装 seccomp 过滤器（容器 root 有 `CAP_SYS_ADMIN`，内核放行），仅当缺少该能力时才回退到旧行为。实测 attach 进入容器后 `NoNewPrivs` 从 1 变 0，`pidfd_open` 仍返回 `ENOSYS`，systemd 单元照常能 spawn。
+- 另一处坑：`~/.config/docker/daemon.json` 与 `dockerd` 的 `--registry-mirror` 标志同时指定 `registry-mirrors` 会报 `specified both` 并拒绝启动。镜像源改为只放在包提供的 `/etc/docker/daemon.json`（`rungic-docker`），启动脚本不再传标志；用户自己的 `~/.config/docker/daemon.json` 仍按 dockerd 的优先级生效。
+- 实机验收（重启容器后）：PID 1 `NoNewPrivs=0`；`docker.service` 自动 `active`；`alpine` 拉取与运行通过；`-p 18080:80` 从 Android `127.0.0.1:18080` 返回 200；bridge 出网通过。设备包 `rungic-plasma-session`（0.513）与 `rungic-docker`（0.514）均由 `tools/rungic_package.py --host phone` 在手机容器内原生构建。
+
 ## 需要的环境条件（试验中逐一核实）
 
 | 条件 | 原因 | 试验中的做法 | 打包时的做法 |
