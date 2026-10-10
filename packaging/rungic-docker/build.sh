@@ -6,3 +6,7 @@ install -Dm755 "$D/dockerd-child" "$DESTDIR/usr/libexec/rungic-docker/dockerd-ch
 install -Dm755 "$D/prepare" "$DESTDIR/usr/libexec/rungic-docker/prepare"
 install -Dm644 "$D/environment.conf" "$DESTDIR/usr/lib/environment.d/60-rungic-docker.conf"
 install -Dm644 "$D/profile.sh" "$DESTDIR/etc/profile.d/rungic-docker.sh"
+# Default daemon settings (registry mirrors, log rotation) for a fresh install. Shipped as a
+# conffile: an existing user copy under ~/.config/docker/daemon.json keeps dockerd's own
+# precedence, and upgrades leave edited copies alone.
+install -Dm644 "$D/daemon.json" "$DESTDIR/etc/docker/daemon.json"
