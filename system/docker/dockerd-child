@@ -18,10 +18,7 @@ iptables -t nat -C POSTROUTING -o tap0 -j MASQUERADE 2>/dev/null ||
     iptables -t nat -A POSTROUTING -o tap0 -j MASQUERADE
 # Image pulls go through the phone's proxy when one is configured (rungic-firstboot.sh).
 if [ -r /etc/profile.d/proxy.sh ]; then . /etc/profile.d/proxy.sh; fi
-# Docker Hub is unreachable directly from the phone's network; pull through public mirrors.
-# A private mirror belongs in the user's own daemon.json, not in this repository.
-exec dockerd --data-root "$RUNGIC_DOCKER_DATA" --iptables=false --ip6tables=false \
-    --registry-mirror=https://docker.1ms.run \
-    --registry-mirror=https://dockerproxy.net \
-    --registry-mirror=https://docker.1panel.live \
-    "$@"
+# Docker Hub is unreachable directly from the phone's network; the registry mirrors are set in the
+# packaged daemon.json (see build.sh), which dockerd reads itself. Do not pass --registry-mirror
+# here: a flag plus the same key in the file is a fatal "specified both" error.
+exec dockerd --data-root "$RUNGIC_DOCKER_DATA" --iptables=false --ip6tables=false "$@"

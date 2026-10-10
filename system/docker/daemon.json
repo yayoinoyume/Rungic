@@ -1,0 +1,12 @@
+{
+  "log-driver": "json-file",
+  "log-opts": {
+    "max-size": "50m",
+    "max-file": "2"
+  },
+  "registry-mirrors": [
+    "https://docker.1ms.run",
+    "https://dockerproxy.net",
+    "https://docker.1panel.live"
+  ]
+}
