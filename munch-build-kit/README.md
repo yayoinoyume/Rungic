@@ -93,6 +93,62 @@ fastboot flash boot new-boot.img
   `docker run --privileged --rm tonistiigi/binfmt --install arm64`，不要用
   `podman unshare`。
 
+## 容器里的 Docker：为什么一开始用不了，后来怎么修好
+
+Rungic 的桌面跑在一个 LXC 容器里（可以理解成"手机里的另一台小电脑"）。我们想在这个
+容器里直接用 Docker 跑别的服务，结果 Docker 怎么都起不来。查下来是两个原因，都跟这台
+K40S 的脾气有关。
+
+### 原因一：一个"补丁程序"顺手关掉了 Docker 需要的能力
+
+这台手机的内核有个小毛病：它有个叫 `pidfd` 的功能只做了一半，会让容器里的系统组件
+（systemd）没法正常回收进程。为了绕过这个毛病，Rungic 往容器里塞了一个自制的补丁程序
+（`system/pidfd-shim.c`，装好后是 `/usr/local/lib/rungic-pidfd.so`），开机时先加载它，
+把这个半成品功能"藏起来"，系统组件就会改走另一条能用的老路。
+
+问题出在：这个补丁程序启动时，顺手打开了一个叫 `NoNewPrivs` 的开关。这个开关的意思是
+"禁止这个进程和它的所有子孙进程提权"。它会被**所有**子进程继承。
+
+而 Docker 的非 root 模式（rootless Docker）恰好需要一个小工具 `newuidmap`，这个工具靠
+"临时提权"才能干活。开关一开，`newuidmap` 就废了，Docker 建自己的隔离空间时直接报错：
+
+```
+newuidmap: write to uid_map failed: Operation not permitted
+```
+
+**修法**：让补丁程序在打开这个开关之前，先试试"不提权能不能装好过滤器"。因为容器里的
+root 本来就有足够权限，所以这条路走得通。只有实在没权限时才回退到老做法。这样补丁程序
+该干的事（藏起 pidfd）照干，但不再连累 Docker。
+
+### 原因二：镜像源写了两遍，Docker 拒绝启动
+
+Docker 拉镜像在国内要配"镜像加速源"。我们一开始在两处都写了这份配置：
+
+- 用户自己建的 `~/.config/docker/daemon.json`
+- Docker 启动命令里的 `--registry-mirror` 参数
+
+Docker 发现同一项配置被指定了两次，直接报 `specified both` 并拒绝启动。
+
+**修法**：镜像源只留一个地方。现在由安装包统一提供 `/etc/docker/daemon.json`，
+启动命令不再重复传参数；用户自己那份 `~/.config/docker/daemon.json` 仍然优先，
+Docker 会按自己的规矩取用。
+
+### 修好之后
+
+改完这两处，重新打包装进容器、重启一次，实测全部通过：
+
+- 容器里的 1 号进程 `NoNewPrivs` 从 1 变回 0
+- Docker 开机自动启动
+- `docker pull` 能拉镜像、`docker run` 能跑容器
+- 端口发布（`-p 18080:80`）从手机这边能访问
+- 容器里能正常上网
+
+两个安装包（`rungic-plasma-session`、`rungic-docker`）都用项目自带的方式
+**在这台手机自己的容器里原生编译**（`tools/rungic_package.py build <包> --host phone`），
+不需要另外的编译机。
+
+细节记录在主仓库 `docs/85-lxc-rootless-docker.md`。
+
 ## 脚本一览
 
 `kernel/scripts/` 里按用途分组：
