@@ -38,6 +38,24 @@ K40S 上得到可运行 Rungic 的手机：
 `SHA256SUMS.txt` 记录关键输入与产物的 SHA-256，用于核对重建产物；二进制重编译
 因时间戳不同哈希会变，属正常现象。
 
+## systemd 255 与 apt 账目对齐
+
+K40S 的内核是 4.19，低于 systemd 258 起的 5.4 基线，容器的运行时锁在 Ubuntu 24.04
+的 `255.4-1ubuntu8.17`。resolute 的 `libsystemd-dev`/`libudev-dev` 和 netplan 会留下
+四个 unmet dependencies，apt 会拒绝安装任何新包。
+
+在手机的 Rungic 容器里以 root 运行：
+
+```bash
+munch-build-kit/rootfs-scripts/reconcile-systemd-255.sh --check
+munch-build-kit/rootfs-scripts/reconcile-systemd-255.sh --dry-run   # 下载与重打包校验，不安装
+munch-build-kit/rootfs-scripts/reconcile-systemd-255.sh --apply
+```
+
+脚本只改开发包头文件、netplan 的依赖元数据、apt pin 和 hold，**不重启 systemd，也不重启
+容器**。它支持 `--rollback`，并从 `/var/tmp/rungic-apt-reconcile/backup/` 恢复。原因、
+验证和限制见 [docs/123](../docs/123-munch-systemd-255.md)。
+
 ## 需要自备的大文件
 
 本目录刻意不收录二进制。构建前需要准备 4 样东西：

@@ -236,7 +236,7 @@ avc: denied { getattr } comm="modprobe" path="/vendor/lib/modules/rmnet_shs.ko"
 
 ## 九、还剩什么
 
-内核已经不是瓶颈了。往下走是装 RungicOS rootfs 并在手机上跑通 LXC 容器，这部分**本篇没有做，也还没有验证**。
+内核已经不是瓶颈了。往下走是装 RungicOS rootfs 并在手机上跑通 LXC 容器，这部分**本篇没有做，也还没有验证**。后续的 systemd 255 与 apt 账目对齐、以及容器 `/tmp` 上限见 [123](123-munch-systemd-255.md)。
 
 ## 十、想复现的话
 

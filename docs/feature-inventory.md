@@ -4,7 +4,7 @@
 
 以产品功能和用户场景为骨架：每条功能是用户能感知的一件事；“体验”是它必须做到的，每条都标明由什么检查（自动测试、实机验收、人工验证或已登记的缺口）。数据在 `quality/`，规则见 [quality/README.md](../quality/README.md)。
 
-共 167 条功能、751 条体验，其中 703 条有检查。
+共 170 条功能、756 条体验，其中 708 条有检查。
 
 ## Agent 能力
 
@@ -1627,6 +1627,35 @@ Agent 不靠点界面就能拿到合并日志、崩溃回溯、追踪、截图�
 注意：
 - tools/device.py 与 tools/prefetch_apt_uris.py 没有任何导入或文档引用。prefetch_apt_uris.py 还写死了代理 192.168.5.45:6152。lxc_kernel_probe.c 只被 docs/16 作为当时的证据引用，新机型接入走三段式 skill 的内核兼容参考。 [docs/16-lxc-prerequisites.md](../docs/16-lxc-prerequisites.md)
 
+### 维护 K40S 适配
+
+重刷或重建 K40S 的 Android 底座与 rootfs 后，恢复内核、容器和 apt 的可运行状态。
+
+#### K40S 的 systemd 255 账目对齐（实验）
+
+`delivery.munch-systemd-255` · Linux 系统功能 — K40S 的 4.19 内核跑不了 systemd 259，运行时锁在 255.4。脚本把开发包和 netplan 的元数据对齐到 255.4，并写入版本 pin 与 hold，让 apt 恢复新装，同时不重启桌面。
+
+- **E1** 在 K40S 容器里跑一条命令后，apt-get check 通过，apt-get install 一个小包不再报 unmet dependencies；运行中的 systemd 仍是 255.4，桌面不重启。（单元测试、人工）
+- **E2** 命令可重复执行；--check 只读报告，--dry-run 只下载并校验重打包，--rollback 恢复修复前的包并撤掉 pin/hold。（单元测试；只能在手机上看：--rollback 未在实机执行，避免把 apt 恢复到已知损坏状态；脚本与备份路径由离线测试和文档检查）
+- **E3** netplan 只改依赖元数据，包内二进制和符号链接与原始包逐项一致；发现任何差异就拒绝安装。（单元测试、人工）
+
+注意：
+- 不要用 apt --fix-broken install 或 apt upgrade 把 systemd 拉回 259；4.19 内核上服务会停在 Result=resources，桌面可能损坏。 [docs/123-munch-systemd-255.md](../docs/123-munch-systemd-255.md)
+- 明确要求 systemd >= 258 或 libsystemd0 >= 256 的新包仍然装不了；这是内核限制，不是脚本缺陷。 [docs/123-munch-systemd-255.md](../docs/123-munch-systemd-255.md)
+
+文档：[docs/123-munch-systemd-255.md](../docs/123-munch-systemd-255.md)
+
+#### K40S 的内核与 rootfs 构建套件（实验）
+
+`delivery.munch-build-kit` · Linux 系统功能 — munch-build-kit 收录 K40S 的内核配置、vendor 模块替换、boot 重打包、rootfs 与 APK 交叉编译脚本。按 README 顺序可重建内核、打包 boot 并制作 rootfs。
+
+- **E1** 按 munch-build-kit/README 的顺序能重建内核、打包 boot 并制作 rootfs；关键输入与产物按 SHA256SUMS.txt 核对。（人工）
+
+注意：
+- 套件刻意不收录大文件（内核源码、clang、boot 镜像、magiskboot），构建前按 README 自备；rootfs 是 16 GiB 稀疏镜像，复制时要保持稀疏。 [munch-build-kit/README.md](../munch-build-kit/README.md)
+
+文档：[docs/91-munch-kernel-rebuild.md](../docs/91-munch-kernel-rebuild.md)、[docs/123-munch-systemd-255.md](../docs/123-munch-systemd-255.md)
+
 ## 桌面模式与外屏
 
 手机里有一台完整的电脑桌面（0 号独立桌面）：浮窗里看、全屏里用、投到电视上当电脑。几块助理屏可以一起看，也可以从别的设备远程看。
@@ -2914,6 +2943,17 @@ Agent 不靠点界面就能拿到合并日志、崩溃回溯、追踪、截图�
 - 不要升级时擅自关闭 SSH 等用户要求开启的服务。服务默认状态只在首次安装配置包时落地一次。 [docs/83-service-policy.md](../docs/83-service-policy.md)
 
 文档：[docs/61-delivery-diagnostics-plan.md](../docs/61-delivery-diagnostics-plan.md)
+
+#### 容器的临时目录有上限，工作文件写磁盘（实验）
+
+`install.container-tmp` · Linux 系统功能 — 容器的 /tmp 是 2 GiB 的内存盘，超过就失败；登录 shell 和 systemd 服务默认把临时文件写到 /var/tmp（rootfs 磁盘），避免构建或 Agent 工作目录吃掉内存和 swap。
+
+- **E1** /tmp 挂载带 2 GiB 上限和 1777 权限；登录 shell、系统服务和用户服务都默认 TMPDIR=/var/tmp，单个任务写满 2 GiB 只会让该任务失败，不会拖垮容器。（单元测试；只能在手机上看：新的 tmpfs 上限要等 LXC 容器下次启动才生效；本次修复只清理了现有 /tmp，没有重启容器）
+
+注意：
+- 已经运行的进程仍使用旧 TMPDIR；容器下次启动后新配置才对它们生效。 [docs/123-munch-systemd-255.md](../docs/123-munch-systemd-255.md)
+
+文档：[docs/123-munch-systemd-255.md](../docs/123-munch-systemd-255.md)
 
 ### 升级与回滚
 

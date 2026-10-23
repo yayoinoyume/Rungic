@@ -17,6 +17,9 @@ scenarios:
   - id: delivery.repository
     title: 管好仓库与项目知识
     summary: 仓库里只有该同步的东西，来源可查。开发 Agent 一进来就找得到约定、技能、文档和功能清单。
+  - id: delivery.munch
+    title: 维护 K40S 适配
+    summary: 重刷或重建 K40S 的 Android 底座与 rootfs 后，恢复内核、容器和 apt 的可运行状态。
 
 features:
   # ---------------------------------------------------------------- try on the phone
@@ -1033,3 +1036,53 @@ features:
         docs: [docs/16-lxc-prerequisites.md]
     code: []
     docs: []
+
+  - id: delivery.munch-systemd-255
+    title: K40S 的 systemd 255 账目对齐
+    scenario: delivery.munch
+    status: experimental
+    platform: linux
+    interfaces: []
+    summary: K40S 的 4.19 内核跑不了 systemd 259，运行时锁在 255.4。脚本把开发包和 netplan 的元数据对齐到 255.4，并写入版本 pin 与 hold，让 apt 恢复新装，同时不重启桌面。
+    experience:
+      - id: E1
+        text: 在 K40S 容器里跑一条命令后，apt-get check 通过，apt-get install 一个小包不再报 unmet dependencies；运行中的 systemd 仍是 255.4，桌面不重启。
+        evidence:
+          - {doc: docs/123-munch-systemd-255.md, date: 2026-10-23, note: "apt-get check 通过，tree 实装成功，systemd 仍为 255.4-1ubuntu8.17"}
+      - id: E2
+        text: 命令可重复执行；--check 只读报告，--dry-run 只下载并校验重打包，--rollback 恢复修复前的包并撤掉 pin/hold。
+        device: --rollback 未在实机执行，避免把 apt 恢复到已知损坏状态；脚本与备份路径由离线测试和文档检查
+      - id: E3
+        text: netplan 只改依赖元数据，包内二进制和符号链接与原始包逐项一致；发现任何差异就拒绝安装。
+        evidence:
+          - {doc: docs/123-munch-systemd-255.md, date: 2026-10-23, note: "netplan.io 39 个文件、netplan-generator 44 个文件及全部符号链接一致"}
+    pitfalls:
+      - text: 不要用 apt --fix-broken install 或 apt upgrade 把 systemd 拉回 259；4.19 内核上服务会停在 Result=resources，桌面可能损坏。
+        docs: [docs/123-munch-systemd-255.md]
+      - text: 明确要求 systemd >= 258 或 libsystemd0 >= 256 的新包仍然装不了；这是内核限制，不是脚本缺陷。
+        docs: [docs/123-munch-systemd-255.md]
+    code:
+      - munch-build-kit/rootfs-scripts/reconcile-systemd-255.sh
+      - munch-build-kit/README.md
+      - docs/123-munch-systemd-255.md
+      - tools/tests/test_munch_reconcile.py
+    docs: [docs/123-munch-systemd-255.md]
+
+  - id: delivery.munch-build-kit
+    title: K40S 的内核与 rootfs 构建套件
+    scenario: delivery.munch
+    status: experimental
+    platform: linux
+    interfaces: []
+    summary: munch-build-kit 收录 K40S 的内核配置、vendor 模块替换、boot 重打包、rootfs 与 APK 交叉编译脚本。按 README 顺序可重建内核、打包 boot 并制作 rootfs。
+    experience:
+      - id: E1
+        text: 按 munch-build-kit/README 的顺序能重建内核、打包 boot 并制作 rootfs；关键输入与产物按 SHA256SUMS.txt 核对。
+        evidence:
+          - {doc: docs/91-munch-kernel-rebuild.md, date: 2026-10-01, note: "内核与 boot 全流程实机记录"}
+    pitfalls:
+      - text: 套件刻意不收录大文件（内核源码、clang、boot 镜像、magiskboot），构建前按 README 自备；rootfs 是 16 GiB 稀疏镜像，复制时要保持稀疏。
+        docs: [munch-build-kit/README.md]
+    code:
+      - munch-build-kit/
+    docs: [docs/91-munch-kernel-rebuild.md, docs/123-munch-systemd-255.md]

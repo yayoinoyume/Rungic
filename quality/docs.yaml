@@ -146,3 +146,5 @@
 - {path: docs/121-acceptance-checklist.md, kind: reference, note: 发版验收清单：Agent 在 G100 上按截图触摸操作的十项、判定与报告格式}
 - {path: docs/122-converge-and-migrations.md, kind: journal, note: 设计稿：Android 设置每次开机收敛（rungic-converge），一次性迁移用账本（三个范围）}
 - {path: docs/research/termux-prefix-build.md, kind: reference, note: 固定 APK 与认证仓库的 Termux 前缀构建及重放；Android 配置待验}
+- {path: docs/123-munch-systemd-255.md, kind: reference, note: K40S 的 systemd 255 账目对齐、apt 修复脚本、验证与 /tmp 上限}
+- {path: docs/91-munch-kernel-rebuild.md, kind: journal, note: K40S 内核重编、刷入、vendor 模块替换与 LXC 前提}
