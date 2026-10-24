@@ -2948,7 +2948,7 @@ Agent 不靠点界面就能拿到合并日志、崩溃回溯、追踪、截图�
 
 `install.container-tmp` · Linux 系统功能 — 容器的 /tmp 是 2 GiB 的内存盘，超过就失败；登录 shell 和 systemd 服务默认把临时文件写到 /var/tmp（rootfs 磁盘），避免构建或 Agent 工作目录吃掉内存和 swap。
 
-- **E1** /tmp 挂载带 2 GiB 上限和 1777 权限；登录 shell、系统服务和用户服务都默认 TMPDIR=/var/tmp，单个任务写满 2 GiB 只会让该任务失败，不会拖垮容器。（单元测试；只能在手机上看：新的 tmpfs 上限要等 LXC 容器下次启动才生效；本次修复只清理了现有 /tmp，没有重启容器）
+- **E1** /tmp 挂载带 2 GiB 上限和 1777 权限；登录 shell、系统服务和用户服务都默认 TMPDIR=/var/tmp，单个任务写满 2 GiB 只会让该任务失败，不会拖垮容器。（单元测试、人工；只能在手机上看：新的 tmpfs 上限要等 LXC 容器下次启动才生效；TMPDIR 配置文件要随镜像/发版部署）
 
 注意：
 - 已经运行的进程仍使用旧 TMPDIR；容器下次启动后新配置才对它们生效。 [docs/123-munch-systemd-255.md](../docs/123-munch-systemd-255.md)

@@ -1,7 +1,7 @@
 # K40S：systemd 255 的 apt 账目对齐与 /tmp 上限
 
 > 适用设备：Redmi K40S（`munch`，SM8250，LineageOS 23.2 / Android 16，内核 4.19.325）。
-> 本文记录 2026-10-23 的实机修复。其他机型不要直接套用：它们的内核和 systemd 版本不同。
+> 本文记录 2026-10-23 的实机修复与 2026-10-24 的重启验收。其他机型不要直接套用：它们的内核和 systemd 版本不同。
 
 ## 一、现象
 
@@ -75,6 +75,14 @@ munch-build-kit/rootfs-scripts/reconcile-systemd-255.sh --apply
 - `systemctl show -p Version`：仍是 `255.4-1ubuntu8.17`；
 - `dpkg --audit`：空。
 
+2026-10-24 08:24 又做了一次受控重启，验证 `/tmp` 上限：
+
+- `/tmp`：`size=2G`，重启后 0 使用；
+- `systemctl show -p Version`：仍是 `255.4-1ubuntu8.17`；
+- `apt-get check` 通过，`htop` 安装模拟正常；
+- `kwin_wayland`、`plasmashell` 均 active，桌面报告 ready；
+- 可用内存约 7.7 GiB，swap 约 558 MiB（修复前 7.2 GiB）。
+
 ## 六、限制
 
 - 明确要求 `systemd >= 258` 或 `libsystemd0 >= 256` 的新包仍然装不了；apt 会直接说明原因。这是内核限制，不是脚本缺陷。
@@ -92,12 +100,16 @@ K40S 修复时发现 `/tmp` 是 tmpfs，默认按内存一半分配（5.7 GiB）
 - `system/config/etc/systemd/system.conf.d/50-rungic-tmpdir.conf` 与 `user.conf.d/50-rungic-tmpdir.conf`：系统与用户服务默认 `TMPDIR=/var/tmp`。
 
 **生效条件**：这些文件随 `rungic-plasma-config` 部署；新的 tmpfs 上限要等 LXC 容器下次启动，已经在运行的进程仍使用旧环境。
-2026-10-23 的实机修复只把现有 `/tmp` 从 5.6 GiB 清到 196 MiB，并**没有重启容器**。
+
+- 2026-10-23：把现有 `/tmp` 从 5.6 GiB 清到 196 MiB，没有重启容器。
+- 2026-10-24：更新 LXC 配置并受控重启，`/tmp` 的 2G 上限已生效。
+- `TMPDIR` 的三个配置文件尚未部署到这台 K40S：它不在 release 体系内，不能走开发覆盖；下一次镜像/发版会带上。在此之前登录 shell 的 `TMPDIR` 仍为空。
 
 ## 八、证据与相关文档
 
 - 修复前状态、apt 报错、`dpkg.log` 的降级记录：本文 §1–2（2026-10-23 实机读取）。
 - 修复后验证：本文 §5（2026-10-23 实机执行）。
+- `/tmp` 上限的重启验收：本文 §5、§7（2026-10-24 实机执行）。
 - K40S 内核重编与 LXC 前提：[91](91-munch-kernel-rebuild.md)。
 - 上游 systemd 258 的内核基线说明：systemd `NEWS` 的 `CHANGES WITH 258`。
 - 构建套件入口：[munch-build-kit/README.md](../munch-build-kit/README.md)。

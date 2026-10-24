@@ -1103,7 +1103,9 @@ features:
     experience:
       - id: E1
         text: /tmp 挂载带 2 GiB 上限和 1777 权限；登录 shell、系统服务和用户服务都默认 TMPDIR=/var/tmp，单个任务写满 2 GiB 只会让该任务失败，不会拖垮容器。
-        device: 新的 tmpfs 上限要等 LXC 容器下次启动才生效；本次修复只清理了现有 /tmp，没有重启容器
+        device: 新的 tmpfs 上限要等 LXC 容器下次启动才生效；TMPDIR 配置文件要随镜像/发版部署
+        evidence:
+          - {doc: docs/123-munch-systemd-255.md, date: 2026-10-24, note: "K40S 受控重启后 /tmp 为 2.0G，apt 与桌面正常；TMPDIR 配置尚未部署"}
     pitfalls:
       - text: 已经运行的进程仍使用旧 TMPDIR；容器下次启动后新配置才对它们生效。
         docs: [docs/123-munch-systemd-255.md]
